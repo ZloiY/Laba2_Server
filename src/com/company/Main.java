@@ -1,10 +1,6 @@
 package com.company;
 
-import com.company.thrift.InvalidRequest;
-import com.company.thrift.Operation;
 import com.company.thrift.WebPatternDB;
-import com.company.thrift.WorkWithClient;
-import javafx.scene.image.Image;
 import org.apache.thrift.server.TServer;
 import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
@@ -44,8 +40,8 @@ public class Main {
         try {
             TServerTransport serverTransport = new TServerSocket(1488);
             server = new TSimpleServer(new TServer.Args(serverTransport).processor(processor));
+            System.out.println("Server is running");
             server.serve();
-            System.out.println("server is running");
         }catch (Exception e){
             e.printStackTrace();
         }

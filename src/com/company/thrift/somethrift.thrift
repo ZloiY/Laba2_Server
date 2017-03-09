@@ -7,10 +7,10 @@ enum Operation{
 }
 
 struct WorkWithClient {
-    1: i32 id =1,
-    2: string name,
-    3: string description,
-    4: binary schema,
+    1: optional i32 id,
+    2: optional string name,
+    3: optional string description,
+    4: optional binary schema,
 }
 
 exception InvalidRequest{
@@ -22,6 +22,8 @@ service WebPatternDB{
     void ping(),
 
     i32 workWithRequest(1:i32 id, 2:Operation op, 3:WorkWithClient work1, 4:WorkWithClient work2) throws (1: InvalidRequest trouble),
+
+    list<WorkWithClient> workWithSearchRequest(1:i32 id, 2:WorkWithClient work),
 
     oneway void zip()
 }
