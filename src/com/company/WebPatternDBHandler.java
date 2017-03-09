@@ -1,9 +1,8 @@
 package com.company;
 
 import com.company.thrift.InvalidRequest;
-import com.company.thrift.Operation;
+import com.company.thrift.PatternModel;
 import com.company.thrift.WebPatternDB;
-import com.company.thrift.WorkWithClient;
 import com.sun.xml.internal.ws.api.pipe.FiberContextSwitchInterceptor;
 import org.apache.thrift.TException;
 
@@ -35,66 +34,49 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         System.out.println("ping()");
     }
 
-    @Override
-    public int workWithRequest(int id, Operation operation, WorkWithClient work1, WorkWithClient work2) throws InvalidRequest {
-        System.out.println("Operation: " + operation.toString());
-        switch (operation){
-            case EDIT: workWithEditRequest(work1, work2); break;
-            case INSERT: workWithInsertRequest(work1); break;
-            case DELETE: workWithDelRequest(work1); break;
-        }
-        return 0;
-    }
 
-    @Override
-    public void zip() {
-        System.out.println("zip()");
-    }
-
-    private int workWithInsertRequest(WorkWithClient work){
+    public void addPattern(PatternModel pattern){
         try{
-            Blob blob = connection.createBlob();
-            blob.setBytes(1,work.schema.array());
             Statement statement = connection.createStatement();
-            statement.execute("insert into patterns(pattern_id, pattern_description, pattern_name, pattern_schema) values('"+work.id+"','"+work.description+"','"+work.name+"','"+blob+"');");
+            if (pattern.schema!=null) {
+                Blob blob = connection.createBlob();
+                blob.setBytes(1, pattern.schema.array());
+                statement.execute("insert into patterns(pattern_description, pattern_name, pattern_schema) values('" + pattern.description + "','" + pattern.name + "','" + blob + "')");
+            }else{
+                statement.execute("insert into patterns(pattern_description, pattern_name) values('" + pattern.description + "','" + pattern.name + "')");
+            }
             statement.close();
         }catch (SQLException e){
             e.printStackTrace();
-            return -1;
         }
-        return 0;
     }
 
-    private int workWithEditRequest(WorkWithClient work1, WorkWithClient work2){
+    public void replacePattern(PatternModel oldPattern, PatternModel newPattern){
         try{
             Blob blob2 = connection.createBlob();
-            blob2.setBytes(1,work2.schema.array());
+            blob2.setBytes(1,newPattern.schema.array());
             Statement statement = connection.createStatement();
-            statement.execute("update patterns set pattern_id='"+work2.id+"',pattern_description='"+work2.description+"',pattern_name='"+work2.name+"',pattern_schema='"+blob2+"' where pattern_id='"+work1.id+"'");
+            statement.execute("update patterns set pattern_name='"+newPattern.id+"',pattern_description='"+newPattern.description+"',pattern_name='"+newPattern.name+"',pattern_schema='"+blob2+"' where pattern_id='"+oldPattern.id+"'");
             statement.close();
         }catch (SQLException e){
             e.printStackTrace();
-            return -1;
         }
-        return 0;
     }
 
-    private int workWithDelRequest(WorkWithClient work){
+    public void deletePattern(PatternModel delPattern){
         try{
             Statement statement = connection.createStatement();
-            statement.execute("delete from patterns where pattern_id='"+work.id+"'");
+            statement.execute("delete from patterns where pattern_id='"+delPattern.id+"'");
             statement.close();
         }catch (SQLException e){
             e.printStackTrace();
-            return -1;
         }
-        return 0;
     }
 
-    public List<WorkWithClient> workWithSearchRequest(int id, WorkWithClient work) throws TException {
+    public List<PatternModel> findPattern(PatternModel pattern) throws TException {
         try{
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(new SQLSearchRequestFabric(work).getSearchRequest());
+            ResultSet resultSet = statement.executeQuery(new SQLSearchRequestFabric(pattern).getSearchRequest());
             return createLists(resultSet);
         }catch (SQLException e){
             e.printStackTrace();
@@ -102,23 +84,51 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         }
     }
 
-    private ArrayList<WorkWithClient> createLists(ResultSet resultSet)throws SQLException{
-        ArrayList<WorkWithClient> returnList = new ArrayList<>();
-        while (resultSet.next()) {
-            ByteBuffer byteBuffer = ByteBuffer.wrap(new byte[10]);
-            InputStream inputStream = resultSet.getBlob(4).getBinaryStream();
-            try {
-                byteBuffer.clear();
-                byteBuffer = ByteBuffer.allocate(inputStream.read());
-            }catch (IOException e){
-                e.printStackTrace();
+    @Override
+    public PatternModel getLastPattern() throws TException {
+        PatternModel lastPattern = new PatternModel();
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet result = statement.executeQuery("select * from patterns order by pattern_id desc limit 1;");
+            if (result.next()) {
+                if (result.getBlob(4) != null) {
+                    try {
+                        InputStream inputStream = result.getBlob(4).getBinaryStream();
+                        ByteBuffer buffer = ByteBuffer.allocate(inputStream.read());
+                        lastPattern.setSchema(buffer);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                lastPattern.setId(result.getInt(1));
+                lastPattern.setName(result.getString(2));
+                lastPattern.setDescription(result.getString(3));
+                return lastPattern;
             }
-            WorkWithClient withClient = new WorkWithClient();
-            withClient.id = resultSet.getInt(1);
-            withClient.name = resultSet.getString(2);
-            withClient.description = resultSet.getString(3);
-            withClient.schema = byteBuffer;
-            returnList.add(withClient);
+        }catch(SQLException e){
+           e.printStackTrace();
+           return null;
+        }
+        return null;
+    }
+
+    private ArrayList<PatternModel> createLists(ResultSet resultSet)throws SQLException{
+        ArrayList<PatternModel> returnList = new ArrayList<>();
+        while (resultSet.next()) {
+            PatternModel pattern = new PatternModel();
+            if (resultSet.getBlob(4) != null){
+                InputStream inputStream = resultSet.getBlob(4).getBinaryStream();
+                try {
+                    ByteBuffer byteBuffer = ByteBuffer.allocate(inputStream.read());
+                    pattern.setSchema(byteBuffer);
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+            pattern.setId(resultSet.getInt(1));
+            pattern.setName(resultSet.getString(2));
+            pattern.setDescription(resultSet.getString(3));
+            returnList.add(pattern);
         }
         return returnList;
     }

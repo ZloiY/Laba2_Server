@@ -1,6 +1,6 @@
 package com.company;
 
-import com.company.thrift.WorkWithClient;
+import com.company.thrift.PatternModel;
 
 import java.nio.ByteBuffer;
 
@@ -13,10 +13,10 @@ public class SQLSearchRequestFabric {
     private String description;
     private String searchRequest;
 
-    public SQLSearchRequestFabric(WorkWithClient workWithClient){
-        id = workWithClient.id;
-        name = workWithClient.name;
-        description = workWithClient.description;
+    public SQLSearchRequestFabric(PatternModel pattern){
+        id = pattern.id;
+        name = pattern.name;
+        description = pattern.description;
         searchRequest = createSearchRequest();
     }
 

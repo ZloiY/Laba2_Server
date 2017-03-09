@@ -1,12 +1,6 @@
 namespace java patterns
 
-enum Operation{
-    INSERT = 1,
-    EDIT = 2,
-    DELETE = 3
-}
-
-struct WorkWithClient {
+struct PatternModel {
     1: optional i32 id,
     2: optional string name,
     3: optional string description,
@@ -21,9 +15,13 @@ exception InvalidRequest{
 service WebPatternDB{
     void ping(),
 
-    i32 workWithRequest(1:i32 id, 2:Operation op, 3:WorkWithClient work1, 4:WorkWithClient work2) throws (1: InvalidRequest trouble),
+    void addPattern(1:PatternModel newPattern) throws (1:InvalidRequest oups),
 
-    list<WorkWithClient> workWithSearchRequest(1:i32 id, 2:WorkWithClient work),
+    void replacePattern(1:PatternModel oldPattern, 2: PatternModel newPattern) throws (1:InvalidRequest oups),
 
-    oneway void zip()
+    void deletePattern(1:PatternModel delPattern) throws (1:InvalidRequest oups),
+
+    list<PatternModel> findPattern (1:PatternModel pattern) throws (1:InvalidRequest oups),
+
+    PatternModel getLastPattern() throws (1:InvalidRequest oups)
 }
