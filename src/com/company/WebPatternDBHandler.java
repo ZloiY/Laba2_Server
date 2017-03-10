@@ -26,7 +26,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             driverManager.registerDriver(driver);
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/web_apps_patterns", "user", "user");
         }catch (SQLException e){
-            e.printStackTrace();
+            System.err.println("Cannot connect to SQL server.");
         }
     }
     @Override
@@ -39,9 +39,17 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         try{
             Statement statement = connection.createStatement();
             if (pattern.schema!=null) {
-                Blob blob = connection.createBlob();
-                blob.setBytes(1, pattern.schema.array());
-                statement.execute("insert into patterns(pattern_description, pattern_name, pattern_schema) values('" + pattern.description + "','" + pattern.name + "','" + blob + "')");
+                byte[] schemaBytes = new byte[pattern.schema.capacity()];
+                for (int i=0; i<pattern.schema.capacity(); i++){
+                    schemaBytes[i] = pattern.schema.get(i);
+                }
+                PreparedStatement preparedStatement = connection.prepareStatement("insert into patterns(pattern_description, pattern_name, pattern_schema) values(?,?,?)");
+                //statement.execute("insert into patterns(pattern_description, pattern_name, pattern_schema) values('" + pattern.description + "','" + pattern.name + "', load_file('" + blob + "'))");
+                preparedStatement.setString(1,pattern.description);
+                preparedStatement.setString(2,pattern.name);
+                preparedStatement.setBytes(3,schemaBytes);
+                preparedStatement.execute();
+                preparedStatement.close();
             }else{
                 statement.execute("insert into patterns(pattern_description, pattern_name) values('" + pattern.description + "','" + pattern.name + "')");
             }
@@ -53,11 +61,13 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
 
     public void replacePattern(PatternModel oldPattern, PatternModel newPattern){
         try{
-            Blob blob2 = connection.createBlob();
-            blob2.setBytes(1,newPattern.schema.array());
-            Statement statement = connection.createStatement();
-            statement.execute("update patterns set pattern_name='"+newPattern.id+"',pattern_description='"+newPattern.description+"',pattern_name='"+newPattern.name+"',pattern_schema='"+blob2+"' where pattern_id='"+oldPattern.id+"'");
-            statement.close();
+            PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=?,pattern_schema=? where pattern_id=?");
+            statement.setInt(1,newPattern.id);
+            statement.setString(2, newPattern.description);
+            statement.setString(3, newPattern.name);
+            statement.setBytes(4, newPattern.schema.array());
+            statement.setInt(5,oldPattern.id);
+            statement.execute();
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -92,13 +102,9 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             ResultSet result = statement.executeQuery("select * from patterns order by pattern_id desc limit 1;");
             if (result.next()) {
                 if (result.getBlob(4) != null) {
-                    try {
-                        InputStream inputStream = result.getBlob(4).getBinaryStream();
-                        ByteBuffer buffer = ByteBuffer.allocate(inputStream.read());
-                        lastPattern.setSchema(buffer);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    Blob blob = result.getBlob(4);
+                    ByteBuffer buffer = ByteBuffer.wrap(blob.getBytes(1,(int)blob.length()));
+                    lastPattern.setSchema(buffer);
                 }
                 lastPattern.setId(result.getInt(1));
                 lastPattern.setName(result.getString(2));
@@ -116,20 +122,17 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         ArrayList<PatternModel> returnList = new ArrayList<>();
         while (resultSet.next()) {
             PatternModel pattern = new PatternModel();
-            if (resultSet.getBlob(4) != null){
-                InputStream inputStream = resultSet.getBlob(4).getBinaryStream();
-                try {
-                    ByteBuffer byteBuffer = ByteBuffer.allocate(inputStream.read());
-                    pattern.setSchema(byteBuffer);
-                }catch (IOException e){
-                    e.printStackTrace();
-                }
+            if (resultSet.getBinaryStream(4) != null){
+                Blob blob = resultSet.getBlob(4);
+                ByteBuffer byteBuffer = ByteBuffer.wrap(blob.getBytes(1,(int)blob.length()));
+                pattern.setSchema(byteBuffer.array());
             }
             pattern.setId(resultSet.getInt(1));
             pattern.setName(resultSet.getString(2));
             pattern.setDescription(resultSet.getString(3));
             returnList.add(pattern);
         }
+        resultSet.close();
         return returnList;
     }
 
