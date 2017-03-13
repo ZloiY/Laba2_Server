@@ -13,7 +13,9 @@ exception InvalidRequest{
 }
 
 service WebPatternDB{
-    void ping(),
+    bool isConnected(),
+
+    void clientConnect(1: bool connect),
 
     void addPattern(1:PatternModel newPattern) throws (1:InvalidRequest oups),
 

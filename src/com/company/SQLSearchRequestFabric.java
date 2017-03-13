@@ -27,9 +27,9 @@ public class SQLSearchRequestFabric {
         if (!(id < 1))
             idSearch = "pattern_id ='"+id+"' ";
         if (name != null)
-            nameSearch = "pattern_name ='"+name+"' ";
+            nameSearch = "pattern_name like '%"+name+"%' ";
         if (description != null)
-            descriptionSearch = "pattern_description ='"+description+"' ";
+            descriptionSearch = "pattern_description like '%"+description+"%' ";
         return searchStatementWith3Parametres(idSearch, nameSearch, descriptionSearch);
     }
 
@@ -49,7 +49,7 @@ public class SQLSearchRequestFabric {
                 return searchStatementWith1Parametr(nameSearch);
             else if (descriptionSearch.isEmpty() && nameSearch.isEmpty() && !idSearch.isEmpty())
                 return searchStatementWith1Parametr(idSearch);
-        }else return "select * from patterns where "+idSearch+", "+descriptionSearch+", "+nameSearch;
+        }else return "select * from patterns where "+idSearch+" and "+descriptionSearch+" and "+nameSearch;
         return null;
     }
 
@@ -58,7 +58,7 @@ public class SQLSearchRequestFabric {
             if (firstParametr.isEmpty())
             return searchStatementWith1Parametr(secondParametr);
             else return searchStatementWith1Parametr(secondParametr);
-        else return "select * from patterns where "+firstParametr+", "+secondParametr;
+        else return "select * from patterns where "+firstParametr+" and "+secondParametr;
     }
 
     private String searchStatementWith1Parametr(String searchParametr){

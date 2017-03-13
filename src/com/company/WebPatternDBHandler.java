@@ -1,13 +1,9 @@
 package com.company;
 
-import com.company.thrift.InvalidRequest;
 import com.company.thrift.PatternModel;
 import com.company.thrift.WebPatternDB;
-import com.sun.xml.internal.ws.api.pipe.FiberContextSwitchInterceptor;
 import org.apache.thrift.TException;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.sql.*;
 import java.util.ArrayList;
@@ -20,6 +16,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
 
     private Connection connection;
     private DriverManager driverManager;
+    private boolean connectoinWithClient;
     public WebPatternDBHandler(){
         try{
             Driver driver = new com.mysql.cj.jdbc.Driver();
@@ -29,11 +26,16 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             System.err.println("Cannot connect to SQL server.");
         }
     }
+
     @Override
-    public void ping() {
-        System.out.println("ping()");
+    public boolean isConnected() {
+        return connectoinWithClient;
+
     }
 
+     public void clientConnect(boolean connect){
+        connectoinWithClient = connect;
+     }
 
     public void addPattern(PatternModel pattern){
         try{
@@ -44,7 +46,6 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
                     schemaBytes[i] = pattern.schema.get(i);
                 }
                 PreparedStatement preparedStatement = connection.prepareStatement("insert into patterns(pattern_description, pattern_name, pattern_schema) values(?,?,?)");
-                //statement.execute("insert into patterns(pattern_description, pattern_name, pattern_schema) values('" + pattern.description + "','" + pattern.name + "', load_file('" + blob + "'))");
                 preparedStatement.setString(1,pattern.description);
                 preparedStatement.setString(2,pattern.name);
                 preparedStatement.setBytes(3,schemaBytes);
@@ -86,7 +87,8 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     public List<PatternModel> findPattern(PatternModel pattern) throws TException {
         try{
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(new SQLSearchRequestFabric(pattern).getSearchRequest());
+            SQLSearchRequestFabric sqlSearchRequestFabric = new SQLSearchRequestFabric(pattern);
+            ResultSet resultSet = statement.executeQuery(sqlSearchRequestFabric.getSearchRequest());
             return createLists(resultSet);
         }catch (SQLException e){
             e.printStackTrace();

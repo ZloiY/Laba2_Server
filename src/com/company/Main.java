@@ -6,9 +6,6 @@ import org.apache.thrift.server.TSimpleServer;
 import org.apache.thrift.transport.TServerSocket;
 import org.apache.thrift.transport.TServerTransport;
 
-import java.io.*;
-import java.nio.ByteBuffer;
-
 public class Main {
 
     private static TServer server;
