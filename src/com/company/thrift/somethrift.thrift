@@ -25,5 +25,7 @@ service WebPatternDB{
 
     list<PatternModel> findPattern (1:PatternModel pattern) throws (1:InvalidRequest oups),
 
+    PatternModel findPatternById (1:i32 id) throws (1:InvalidRequest oups),
+
     PatternModel getLastPattern() throws (1:InvalidRequest oups)
 }

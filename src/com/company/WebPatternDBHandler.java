@@ -12,6 +12,7 @@ import java.util.List;
 /**
  * Created by ZloiY on 3/8/2017.
  */
+
 public class WebPatternDBHandler implements WebPatternDB.Iface {
 
     private Connection connection;
@@ -94,6 +95,28 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             e.printStackTrace();
             return null;
         }
+    }
+
+    public PatternModel findPatternById(int id) throws TException {
+        try{
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery("select * from patterns where pattern_id ='"+id+"'");
+            PatternModel pattern = new PatternModel();
+            if (resultSet.next()){
+                pattern.setId(resultSet.getInt(1));
+                pattern.setName(resultSet.getString(2));
+                pattern.setDescription(resultSet.getString(3));
+                if (resultSet.getBlob(4) != null) {
+                    Blob blob = resultSet.getBlob(4);
+                    ByteBuffer buffer = ByteBuffer.wrap(blob.getBytes(1,(int)blob.length()));
+                    pattern.setSchema(buffer);
+                }
+            }
+            return pattern;
+        }catch (SQLException e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
