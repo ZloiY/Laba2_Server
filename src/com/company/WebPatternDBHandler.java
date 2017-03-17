@@ -33,16 +33,6 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         }
     }
 
-    @Override
-    public boolean isConnected() {
-        return connectoinWithClient;
-
-    }
-
-    public void clientConnect(boolean connect){
-        connectoinWithClient = connect;
-     }
-
     public void addPattern(PatternModel pattern){
          log.log("New insert request from client.");
          log.log("Adding new pattern " + pattern.getName());
@@ -70,15 +60,24 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
 
     public void replacePattern(PatternModel oldPattern, PatternModel newPattern){
         log.log("Replace request from client.");
-        log.log("Replace this pattern " + oldPattern.getName() + "to this " + newPattern.getName());
+        log.log("Replace this pattern " + oldPattern.getId() + " to this " + newPattern.getId());
         try{
-            PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=?,pattern_schema=? where pattern_id=?");
-            statement.setInt(1,newPattern.id);
-            statement.setString(2, newPattern.description);
-            statement.setString(3, newPattern.name);
-            statement.setBytes(4, newPattern.schema.array());
-            statement.setInt(5,oldPattern.id);
-            statement.execute();
+            if (newPattern.getSchema() != null) {
+                PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=?,pattern_schema=? where pattern_id=?");
+                statement.setInt(1, newPattern.id);
+                statement.setString(2, newPattern.description);
+                statement.setString(3, newPattern.name);
+                statement.setBytes(4, newPattern.schema.array());
+                statement.setInt(5, oldPattern.id);
+                statement.execute();
+            }else{
+                PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=? where pattern_id=?");
+                statement.setInt(1, newPattern.id);
+                statement.setString(2, newPattern.description);
+                statement.setString(3, newPattern.name);
+                statement.setInt(4, oldPattern.id);
+                statement.execute();
+            }
         }catch (SQLException e){
             e.printStackTrace();
         }
@@ -86,7 +85,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
 
     public void deletePattern(PatternModel delPattern){
         log.log("Delete request from client.");
-        log.log("Deleting pattern " + delPattern.getName());
+        log.log("Deleting pattern " + delPattern.getId());
         try{
             Statement statement = connection.createStatement();
             statement.execute("delete from patterns where pattern_id='"+delPattern.id+"'");
