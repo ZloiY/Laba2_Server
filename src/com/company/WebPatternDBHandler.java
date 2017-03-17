@@ -3,6 +3,7 @@ package com.company;
 import com.company.thrift.PatternModel;
 import com.company.thrift.WebPatternDB;
 import org.apache.thrift.TException;
+import sun.rmi.runtime.Log;
 
 import java.nio.ByteBuffer;
 import java.sql.*;
@@ -18,11 +19,15 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     private Connection connection;
     private DriverManager driverManager;
     private boolean connectoinWithClient;
+    private  LogThread log;
     public WebPatternDBHandler(){
         try{
             Driver driver = new com.mysql.cj.jdbc.Driver();
             driverManager.registerDriver(driver);
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/web_apps_patterns", "user", "user");
+            log = new LogThread();
+            log.start();
+            log.log("Starting new connection.");
         }catch (SQLException e){
             System.err.println("Cannot connect to SQL server.");
         }
@@ -34,11 +39,13 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
 
     }
 
-     public void clientConnect(boolean connect){
+    public void clientConnect(boolean connect){
         connectoinWithClient = connect;
      }
 
     public void addPattern(PatternModel pattern){
+         log.log("New insert request from client.");
+         log.log("Adding new pattern " + pattern.getName());
         try{
             Statement statement = connection.createStatement();
             if (pattern.schema!=null) {
@@ -62,6 +69,8 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     }
 
     public void replacePattern(PatternModel oldPattern, PatternModel newPattern){
+        log.log("Replace request from client.");
+        log.log("Replace this pattern " + oldPattern.getName() + "to this " + newPattern.getName());
         try{
             PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=?,pattern_schema=? where pattern_id=?");
             statement.setInt(1,newPattern.id);
@@ -76,6 +85,8 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     }
 
     public void deletePattern(PatternModel delPattern){
+        log.log("Delete request from client.");
+        log.log("Deleting pattern " + delPattern.getName());
         try{
             Statement statement = connection.createStatement();
             statement.execute("delete from patterns where pattern_id='"+delPattern.id+"'");
@@ -86,6 +97,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     }
 
     public List<PatternModel> findPattern(PatternModel pattern) throws TException {
+        log.log("Search request from client.");
         try{
             Statement statement = connection.createStatement();
             SQLSearchRequestFabric sqlSearchRequestFabric = new SQLSearchRequestFabric(pattern);
@@ -98,6 +110,8 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     }
 
     public PatternModel findPatternById(int id) throws TException {
+        log.log("Search by id request from client.");
+        log.log("Searching id: "+id);
         try{
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("select * from patterns where pattern_id ='"+id+"'");
@@ -112,33 +126,10 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
                     pattern.setSchema(buffer);
                 }
             }
+            log.log("Find pattern "+pattern.getName());
             return pattern;
         }catch (SQLException e){
             e.printStackTrace();
-        }
-        return null;
-    }
-
-    @Override
-    public PatternModel getLastPattern() throws TException {
-        PatternModel lastPattern = new PatternModel();
-        try {
-            Statement statement = connection.createStatement();
-            ResultSet result = statement.executeQuery("select * from patterns order by pattern_id desc limit 1;");
-            if (result.next()) {
-                if (result.getBlob(4) != null) {
-                    Blob blob = result.getBlob(4);
-                    ByteBuffer buffer = ByteBuffer.wrap(blob.getBytes(1,(int)blob.length()));
-                    lastPattern.setSchema(buffer);
-                }
-                lastPattern.setId(result.getInt(1));
-                lastPattern.setName(result.getString(2));
-                lastPattern.setDescription(result.getString(3));
-                return lastPattern;
-            }
-        }catch(SQLException e){
-           e.printStackTrace();
-           return null;
         }
         return null;
     }
@@ -156,6 +147,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             pattern.setName(resultSet.getString(2));
             pattern.setDescription(resultSet.getString(3));
             returnList.add(pattern);
+            log.log("Find pattern " + pattern.getName());
         }
         resultSet.close();
         return returnList;
@@ -163,7 +155,9 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
 
     public void closeConnection(){
         try{
+            log.log("Closing connection");
             connection.close();
+            log.closeThread();
         }catch (SQLException e){
             e.printStackTrace();
         }

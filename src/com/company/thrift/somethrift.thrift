@@ -13,9 +13,6 @@ exception InvalidRequest{
 }
 
 service WebPatternDB{
-    bool isConnected(),
-
-    void clientConnect(1: bool connect),
 
     void addPattern(1:PatternModel newPattern) throws (1:InvalidRequest oups),
 
@@ -25,7 +22,5 @@ service WebPatternDB{
 
     list<PatternModel> findPattern (1:PatternModel pattern) throws (1:InvalidRequest oups),
 
-    PatternModel findPatternById (1:i32 id) throws (1:InvalidRequest oups),
-
-    PatternModel getLastPattern() throws (1:InvalidRequest oups)
+    PatternModel findPatternById (1:i32 id) throws (1:InvalidRequest oups)
 }
