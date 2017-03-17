@@ -29,7 +29,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             log.start();
             log.log("Starting new connection.");
         }catch (SQLException e){
-            System.err.println("Cannot connect to SQL server.");
+            log.log("Cannot connect to SQL server.");
         }
     }
 

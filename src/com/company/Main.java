@@ -9,9 +9,12 @@ import org.apache.thrift.transport.TServerTransport;
 public class Main {
 
     private static TServer server;
+    private static LogThread logThread;
 
     public static void main(String[] args) {
 	    WebPatternDBHandler webPatternDBHandler = new WebPatternDBHandler();
+	    logThread = new LogThread();
+	    logThread.start();
         try{
             WebPatternDB.Processor webPatternDB = new WebPatternDB.Processor(webPatternDBHandler);
             Runnable connectionThread = new Runnable() {
@@ -23,6 +26,8 @@ public class Main {
                 @Override
                 public void run() {
                     webPatternDBHandler.closeConnection();
+                    logThread.log("Stopping server.");
+                    logThread.closeThread();
                     if (server.isServing())
                     server.stop();
                 }
@@ -37,7 +42,7 @@ public class Main {
         try {
             TServerTransport serverTransport = new TServerSocket(1488);
             server = new TSimpleServer(new TServer.Args(serverTransport).processor(processor));
-            System.out.println("Server is running");
+            logThread.log("Server is running");
             server.serve();
         }catch (Exception e){
             e.printStackTrace();
