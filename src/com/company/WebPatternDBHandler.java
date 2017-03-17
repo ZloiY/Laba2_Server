@@ -11,15 +11,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by ZloiY on 3/8/2017.
+ * Класс имплементирующий интерфейс сгенерированного класса WebPatternDB
+ * и реализующего выполнение операций на стороне сервера.
  */
 
 public class WebPatternDBHandler implements WebPatternDB.Iface {
-
+    /**
+     * Соединенение с базой данной
+     */
     private Connection connection;
     private DriverManager driverManager;
-    private boolean connectoinWithClient;
+    /**
+     * Поток логгера
+     */
     private  LogThread log;
+
+    /**
+     * Конструктор. Выполняет подключение к базе данных, запускает поток логгера.
+     */
     public WebPatternDBHandler(){
         try{
             Driver driver = new com.mysql.cj.jdbc.Driver();
@@ -33,6 +42,10 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         }
     }
 
+    /**
+     * Добавляет новый запись в базу данных.
+     * @param pattern содержит наименование, описание и графическую схему паттерна необходимых для заполнения базы данных
+     */
     public void addPattern(PatternModel pattern){
          log.log("New insert request from client.");
          log.log("Adding new pattern " + pattern.getName());
@@ -58,6 +71,11 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         }
     }
 
+    /**
+     * Заменяет существующую запись в базе данных на новую.
+     * @param oldPattern старая запись в базе данных, которую заменют.
+     * @param newPattern новая запись в базе данных, которой заменют.
+     */
     public void replacePattern(PatternModel oldPattern, PatternModel newPattern){
         log.log("Replace request from client.");
         log.log("Replace this pattern " + oldPattern.getId() + " to this " + newPattern.getId());
@@ -83,6 +101,10 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         }
     }
 
+    /**
+     * Удаляет запись из базы данных.
+     * @param delPattern запись для удаления из базы данных.
+     */
     public void deletePattern(PatternModel delPattern){
         log.log("Delete request from client.");
         log.log("Deleting pattern " + delPattern.getId());
@@ -95,6 +117,12 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         }
     }
 
+    /**
+     * Ищет паттерны согласно данной модели
+     * @param pattern модель для поиска паттернов
+     * @return список найденных паттернов в базе данных
+     * @throws TException выбрасывается при наличии неполадок в RPC
+     */
     public List<PatternModel> findPattern(PatternModel pattern) throws TException {
         log.log("Search request from client.");
         try{
@@ -108,6 +136,12 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         }
     }
 
+    /**
+     * Ищет паттерн согласно его id в базе данных.
+     * @param id id паттерна
+     * @return найденный паттерн
+     * @throws TException выбрасывается при наличии неполадок в RPC
+     */
     public PatternModel findPatternById(int id) throws TException {
         log.log("Search by id request from client.");
         log.log("Searching id: "+id);
@@ -133,6 +167,12 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         return null;
     }
 
+    /**
+     * Используется в findPattern для формирования списка паттернов из найденных данных в базе данных.
+     * @param resultSet данные из базы данных
+     * @return список найденных паттернов
+     * @throws SQLException выбрасывается при сбоях вработе с базой данных
+     */
     private ArrayList<PatternModel> createLists(ResultSet resultSet)throws SQLException{
         ArrayList<PatternModel> returnList = new ArrayList<>();
         while (resultSet.next()) {
@@ -152,6 +192,10 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         return returnList;
     }
 
+    /**
+     * Закрвает соединение с базой данных.
+     * Закрывает поток логгера.
+     */
     public void closeConnection(){
         try{
             log.log("Closing connection");
