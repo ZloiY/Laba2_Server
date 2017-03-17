@@ -5,14 +5,29 @@ import com.company.thrift.PatternModel;
 import java.nio.ByteBuffer;
 
 /**
- * Created by ZloiY on 3/9/2017.
+ * Класс формирующий поисковый запрос для базы данных SQL
  */
 public class SQLSearchRequestFabric {
+    /**
+     * id паттерна в базе данных
+     */
     private int id;
+    /**
+     * Название паттерна в базе данных
+     */
     private String name;
+    /**
+     * Описание паттерна в базе данных
+     */
     private String description;
+    /**
+     * Поисковый запрос к базе данных
+     */
     private String searchRequest;
 
+    /**
+     * @param pattern модель для поиска нужного паттерна
+     */
     public SQLSearchRequestFabric(PatternModel pattern){
         id = pattern.id;
         name = pattern.name;
@@ -20,6 +35,10 @@ public class SQLSearchRequestFabric {
         searchRequest = createSearchRequest();
     }
 
+    /**
+     * Формирует основные параметры для поиска
+     * @return готовый поисковый запрос
+     */
     private String createSearchRequest(){
         String idSearch = "";
         String nameSearch = "";
@@ -33,6 +52,13 @@ public class SQLSearchRequestFabric {
         return searchStatementWith3Parametres(idSearch, nameSearch, descriptionSearch);
     }
 
+    /**
+     * Формирует поисковый запрос из трёх параметров поиска.
+     * @param idSearch первый параметр поиска
+     * @param nameSearch второй параметр поиска
+     * @param descriptionSearch третий параметр поиска
+     * @return готовый поисковый запрос
+     */
     private String searchStatementWith3Parametres(String idSearch, String nameSearch, String descriptionSearch){
         if (idSearch.isEmpty() && nameSearch.isEmpty() && descriptionSearch.isEmpty())
             return "select * from patterns";
@@ -53,6 +79,12 @@ public class SQLSearchRequestFabric {
         return null;
     }
 
+    /**
+     * Формирует поисквый запрос из двух параметров поиска.
+     * @param firstParametr первый парметр поиска
+     * @param secondParametr второй параметр поиска
+     * @return готовый поисковый запрос
+     */
     private String searchStatementWith2Parametres(String firstParametr, String secondParametr){
         if (firstParametr.isEmpty() || secondParametr.isEmpty())
             if (firstParametr.isEmpty())
@@ -61,10 +93,19 @@ public class SQLSearchRequestFabric {
         else return "select * from patterns where "+firstParametr+" and "+secondParametr;
     }
 
+    /**
+     * Формирует поисковый запрос из одного параметра
+     * @param searchParametr парметр поиска
+     * @return готовый поисковый запрос
+     */
     private String searchStatementWith1Parametr(String searchParametr){
         return "select * from patterns where "+searchParametr;
     }
 
+    /**
+     * Возвращает поисковый запрос.
+     * @return поисковый запрос
+     */
     public String getSearchRequest(){
         return searchRequest;
     }

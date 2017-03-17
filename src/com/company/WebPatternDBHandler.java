@@ -43,7 +43,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     }
 
     /**
-     * Добавляет новый запись в базу данных.
+     * Добавляет новый паттер в базу данных.
      * @param pattern содержит наименование, описание и графическую схему паттерна необходимых для заполнения базы данных
      */
     public void addPattern(PatternModel pattern){
@@ -72,9 +72,9 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     }
 
     /**
-     * Заменяет существующую запись в базе данных на новую.
-     * @param oldPattern старая запись в базе данных, которую заменют.
-     * @param newPattern новая запись в базе данных, которой заменют.
+     * Заменяет существующую паттерн в базе данных на новую.
+     * @param oldPattern старый паттерн в базе данных, который заменят.
+     * @param newPattern новый паттерн в базе данных, которым заменят.
      */
     public void replacePattern(PatternModel oldPattern, PatternModel newPattern){
         log.log("Replace request from client.");
@@ -102,8 +102,8 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     }
 
     /**
-     * Удаляет запись из базы данных.
-     * @param delPattern запись для удаления из базы данных.
+     * Удаляет паттерн из базы данных.
+     * @param delPattern паттрен для удаления из базы данных.
      */
     public void deletePattern(PatternModel delPattern){
         log.log("Delete request from client.");
