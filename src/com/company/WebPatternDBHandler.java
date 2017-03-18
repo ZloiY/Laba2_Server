@@ -28,13 +28,13 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     /**
      * Конструктор. Выполняет подключение к базе данных, запускает поток логгера.
      */
-    public WebPatternDBHandler(){
+    public WebPatternDBHandler(LogThread log){
         try{
             Driver driver = new com.mysql.cj.jdbc.Driver();
             driverManager.registerDriver(driver);
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/web_apps_patterns", "user", "user");
-            log = new LogThread();
-            log.start();
+            this.log = log;
+            this.log.log("Connect to data base");
         }catch (SQLException e){
             log.log("Cannot connect to SQL server.");
         }

@@ -12,7 +12,7 @@ public class Main {
     private static LogThread logThread;
 
     public static void main(String[] args) {
-	    WebPatternDBHandler webPatternDBHandler = new WebPatternDBHandler();
+	    WebPatternDBHandler webPatternDBHandler = new WebPatternDBHandler(logThread);
 	    logThread = new LogThread();
 	    logThread.start();
         try{
@@ -25,10 +25,11 @@ public class Main {
             Runtime.getRuntime().addShutdownHook(new Thread(){
                 @Override
                 public void run() {
+
                     webPatternDBHandler.closeConnection();
                     logThread.log("Stopping server.");
                     logThread.closeThread();
-                    if (server.isServing())
+                    if (server.isServing()||server!=null)
                     server.stop();
                 }
             });
