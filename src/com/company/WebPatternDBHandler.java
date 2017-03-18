@@ -3,7 +3,6 @@ package com.company;
 import com.company.thrift.PatternModel;
 import com.company.thrift.WebPatternDB;
 import org.apache.thrift.TException;
-import sun.rmi.runtime.Log;
 
 import java.nio.ByteBuffer;
 import java.sql.*;
@@ -36,7 +35,6 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/web_apps_patterns", "user", "user");
             log = new LogThread();
             log.start();
-            log.log("Starting new connection.");
         }catch (SQLException e){
             log.log("Cannot connect to SQL server.");
         }
