@@ -12,8 +12,8 @@ public class Main {
     private static LogThread logThread;
 
     public static void main(String[] args) {
+        logThread = new LogThread();
 	    WebPatternDBHandler webPatternDBHandler = new WebPatternDBHandler(logThread);
-	    logThread = new LogThread();
 	    logThread.start();
         try{
             WebPatternDB.Processor webPatternDB = new WebPatternDB.Processor(webPatternDBHandler);
