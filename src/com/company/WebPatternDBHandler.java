@@ -198,7 +198,6 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         try{
             log.log("Closing connection");
             connection.close();
-            log.closeThread();
         }catch (SQLException e){
             e.printStackTrace();
         }
