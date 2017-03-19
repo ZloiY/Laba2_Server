@@ -4,17 +4,28 @@ package com.company;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonStructure;
 import java.io.*;
 
 /**
- * Created by ZloiY on 3/19/2017.
+ * Класс для прочтения файла конфигурации сервера.
  */
 public class ConfigReader {
+    /**
+     * Порт на котором будет запущен сервер.
+     */
     private int port;
+    /**
+     * Имя пользователя базы данных.
+     */
     private String userName;
+    /**
+     * Пароль пользователя базы данных.
+     */
     private String userPass;
 
+    /**
+     * Читает из файла конфигурации порт сервера, имя пользователя базы данных, пароль базы данных.
+     */
     public ConfigReader(){
         JsonReader jsonReader;
         try{
@@ -31,14 +42,24 @@ public class ConfigReader {
         }
     }
 
-    public int getPort() {
-        return port;
-    }
+    /**
+     * Возвращает порт сервера.
+     * @return порт сервера
+     */
+    public int getPort() { return port;  }
 
+    /**
+     * Возвращает имя пользователя базы данных.
+     * @return имя пользователя базы данных
+     */
     public String getUserName() {
         return userName;
     }
 
+    /**
+     * Возвращает пароль пользователя базы данных.
+     * @return пароль пользователя базы данных
+     */
     public String getUserPass() {
         return userPass;
     }

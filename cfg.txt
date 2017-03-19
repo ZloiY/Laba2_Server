@@ -1,0 +1,6 @@
+{"server":{
+	"port":1488,
+	"DBUserName":"user",
+	"DBUserPass":"user"
+	}
+}
