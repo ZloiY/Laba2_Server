@@ -47,7 +47,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      */
     public void addPattern(PatternModel pattern){
          log.log("New insert request from client.");
-         log.log("Adding new pattern " + pattern.getName());
+         log.log("Adding new pattern " + pattern.getName() + " pattern group " + pattern.getPatternGroup());
         try{
             Statement statement = connection.createStatement();
             if (pattern.schema!=null) {
@@ -55,7 +55,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
                 for (int i=0; i<pattern.schema.capacity(); i++){
                     schemaBytes[i] = pattern.schema.get(i);
                 }
-                PreparedStatement preparedStatement = connection.prepareStatement("insert into patterns(pattern_description, pattern_name, pattern_schema) values(?,?,?)");
+                PreparedStatement preparedStatement = connection.prepareStatement("insert into "+pattern.getPatternGroup()+"(pattern_description, pattern_name, pattern_schema) values(?,?,?)");
                 preparedStatement.setString(1,pattern.description);
                 preparedStatement.setString(2,pattern.name);
                 preparedStatement.setBytes(3,schemaBytes);
@@ -80,7 +80,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         log.log("Replace this pattern " + oldPattern.getId() + " to this " + newPattern.getId());
         try{
             if (newPattern.getSchema() != null) {
-                PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=?,pattern_schema=? where pattern_id=?");
+                PreparedStatement statement = connection.prepareStatement("update "+oldPattern.getPatternGroup()+" set pattern_name=?,pattern_description=?,pattern_name=?,pattern_schema=? where pattern_id=?");
                 statement.setInt(1, newPattern.id);
                 statement.setString(2, newPattern.description);
                 statement.setString(3, newPattern.name);
@@ -88,7 +88,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
                 statement.setInt(5, oldPattern.id);
                 statement.execute();
             }else{
-                PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=? where pattern_id=?");
+                PreparedStatement statement = connection.prepareStatement("update "+oldPattern.getPatternGroup()+" set pattern_name=?,pattern_description=?,pattern_name=? where pattern_id=?");
                 statement.setInt(1, newPattern.id);
                 statement.setString(2, newPattern.description);
                 statement.setString(3, newPattern.name);
@@ -109,7 +109,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         log.log("Deleting pattern " + delPattern.getId());
         try{
             Statement statement = connection.createStatement();
-            statement.execute("delete from patterns where pattern_id='"+delPattern.id+"'");
+            statement.execute("delete from "+delPattern.getPatternGroup()+" where pattern_id='"+delPattern.id+"'");
             statement.close();
         }catch (SQLException e){
             e.printStackTrace();
@@ -126,8 +126,8 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         log.log("Search request from client.");
         try{
             Statement statement = connection.createStatement();
-            SQLSearchRequestFabric sqlSearchRequestFabric = new SQLSearchRequestFabric(pattern);
-            ResultSet resultSet = statement.executeQuery(sqlSearchRequestFabric.getSearchRequest());
+            SQLSearchRequestConfigurator sqlSearchRequestConfigurator = new SQLSearchRequestConfigurator(pattern);
+            ResultSet resultSet = statement.executeQuery(sqlSearchRequestConfigurator.getSearchRequest());
             return createLists(resultSet);
         }catch (SQLException e){
             e.printStackTrace();
@@ -141,12 +141,12 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      * @return найденный паттерн
      * @throws TException выбрасывается при наличии неполадок в RPC
      */
-    public PatternModel findPatternById(int id) throws TException {
+    public PatternModel findPatternById(int id, String patternGroup) throws TException {
         log.log("Search by id request from client.");
         log.log("Searching id: "+id);
         try{
             Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery("select * from patterns where pattern_id ='"+id+"'");
+            ResultSet resultSet = statement.executeQuery("select * from "+patternGroup+" where pattern_id ='"+id+"'");
             PatternModel pattern = new PatternModel();
             if (resultSet.next()){
                 pattern.setId(resultSet.getInt(1));

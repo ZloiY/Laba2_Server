@@ -2,14 +2,14 @@ namespace java patterns
 
 struct PatternModel {
     1: optional i32 id,
-    2: optional string name,
-    3: optional string description,
-    4: optional binary schema,
+    2: optional string patternGroup,
+    3: optional string name,
+    4: optional string description,
+    5: optional binary schema,
 }
 
 exception InvalidRequest{
-    1: i32 whatO,
-    2: string whatHappens
+    1: string whatHappens
 }
 
 service WebPatternDB{
@@ -22,5 +22,5 @@ service WebPatternDB{
 
     list<PatternModel> findPattern (1:PatternModel pattern) throws (1:InvalidRequest oups),
 
-    PatternModel findPatternById (1:i32 id) throws (1:InvalidRequest oups)
+    PatternModel findPatternById (1:i32 id, 2:string patternGroup) throws (1:InvalidRequest oups)
 }

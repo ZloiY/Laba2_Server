@@ -7,7 +7,7 @@ import java.nio.ByteBuffer;
 /**
  * Класс формирующий поисковый запрос для базы данных SQL
  */
-public class SQLSearchRequestFabric {
+public class SQLSearchRequestConfigurator {
     /**
      * id паттерна в базе данных
      */
@@ -24,14 +24,19 @@ public class SQLSearchRequestFabric {
      * Поисковый запрос к базе данных
      */
     private String searchRequest;
+    /**
+     * Название таблицы гед находится паттерн
+     */
+    private String patternGroup;
 
     /**
      * @param pattern модель для поиска нужного паттерна
      */
-    public SQLSearchRequestFabric(PatternModel pattern){
+    public SQLSearchRequestConfigurator(PatternModel pattern){
         id = pattern.id;
         name = pattern.name;
         description = pattern.description;
+        patternGroup = pattern.getPatternGroup();
         searchRequest = createSearchRequest();
     }
 
@@ -61,7 +66,7 @@ public class SQLSearchRequestFabric {
      */
     private String searchStatementWith3Parametres(String idSearch, String nameSearch, String descriptionSearch){
         if (idSearch.isEmpty() && nameSearch.isEmpty() && descriptionSearch.isEmpty())
-            return "select * from patterns";
+            return "select * from "+patternGroup;
         if (idSearch.isEmpty() || nameSearch.isEmpty() || descriptionSearch.isEmpty()){
             if (idSearch.isEmpty() && !nameSearch.isEmpty() && !descriptionSearch.isEmpty())
                 return searchStatementWith2Parametres(nameSearch, descriptionSearch);
@@ -75,7 +80,7 @@ public class SQLSearchRequestFabric {
                 return searchStatementWith1Parametr(nameSearch);
             else if (descriptionSearch.isEmpty() && nameSearch.isEmpty() && !idSearch.isEmpty())
                 return searchStatementWith1Parametr(idSearch);
-        }else return "select * from patterns where "+idSearch+" and "+descriptionSearch+" and "+nameSearch;
+        }else return "select * from "+patternGroup+" where "+idSearch+" and "+descriptionSearch+" and "+nameSearch;
         return null;
     }
 
@@ -90,7 +95,7 @@ public class SQLSearchRequestFabric {
             if (firstParametr.isEmpty())
             return searchStatementWith1Parametr(secondParametr);
             else return searchStatementWith1Parametr(secondParametr);
-        else return "select * from patterns where "+firstParametr+" and "+secondParametr;
+        else return "select * from "+patternGroup+" where "+firstParametr+" and "+secondParametr;
     }
 
     /**
@@ -99,7 +104,7 @@ public class SQLSearchRequestFabric {
      * @return готовый поисковый запрос
      */
     private String searchStatementWith1Parametr(String searchParametr){
-        return "select * from patterns where "+searchParametr;
+        return "select * from "+patternGroup+" where "+searchParametr;
     }
 
     /**
