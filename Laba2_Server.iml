@@ -10,7 +10,7 @@
     <orderEntry type="library" name="org.apache.thrift:libthrift:0.10.0" level="project" />
     <orderEntry type="library" name="mysql:mysql-connector-java:6.0.5" level="project" />
     <orderEntry type="library" name="org.slf4j:slf4j-simple:1.7.22" level="project" />
-    <orderEntry type="library" name="info.cukes:cucumber-junit:1.2.5" level="project" />
     <orderEntry type="library" name="groovy-2.4.9" level="application" />
+    <orderEntry type="library" name="org.glassfish:javax.json:1.0.4" level="project" />
   </component>
 </module>
