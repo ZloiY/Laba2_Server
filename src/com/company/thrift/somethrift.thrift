@@ -2,10 +2,17 @@ namespace java patterns
 
 struct PatternModel {
     1: optional i32 id,
-    2: optional string patternGroup,
+    2: optional i32 PatternGroup,
     3: optional string name,
     4: optional string description,
     5: optional binary schema,
+}
+
+enum PatternGroup{
+    MV_PATTERNS = 1,
+    STRUCT_PATTERNS = 2,
+    CREAT_PATTERNS = 3,
+    BEHAVE_PATTERNS = 4
 }
 
 exception InvalidRequest{
@@ -22,5 +29,7 @@ service WebPatternDB{
 
     list<PatternModel> findPattern (1:PatternModel pattern) throws (1:InvalidRequest oups),
 
-    PatternModel findPatternById (1:i32 id, 2:string patternGroup) throws (1:InvalidRequest oups)
+    PatternModel findPatternById (1:i32 id, 2:string patternGroup) throws (1:InvalidRequest oups),
+
+    list<string> findPatternGroups() throws (1:InvalidRequest oups)
 }
