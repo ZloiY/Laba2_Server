@@ -203,6 +203,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             pattern.setId(resultSet.getInt(1));
             pattern.setName(resultSet.getString(2));
             pattern.setDescription(resultSet.getString(3));
+            pattern.setPatternGroup(resultSet.getInt(5));
             returnList.add(pattern);
             log.log("Find pattern " + pattern.getName());
         }
