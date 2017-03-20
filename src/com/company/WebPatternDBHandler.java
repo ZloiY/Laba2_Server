@@ -55,14 +55,15 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
                 for (int i=0; i<pattern.schema.capacity(); i++){
                     schemaBytes[i] = pattern.schema.get(i);
                 }
-                PreparedStatement preparedStatement = connection.prepareStatement("insert into patterns(pattern_description, pattern_name, pattern_schema) values(?,?,?)");
+                PreparedStatement preparedStatement = connection.prepareStatement("insert into patterns(pattern_description, pattern_name, pattern_schema, pattern_group) values(?,?,?,?)");
                 preparedStatement.setString(1,pattern.description);
                 preparedStatement.setString(2,pattern.name);
                 preparedStatement.setBytes(3,schemaBytes);
+                preparedStatement.setInt(4,pattern.PatternGroup);
                 preparedStatement.execute();
                 preparedStatement.close();
             }else{
-                statement.execute("insert into patterns(pattern_description, pattern_name) values('" + pattern.description + "','" + pattern.name + "')");
+                statement.execute("insert into patterns(pattern_description, pattern_name, pattern_group) values('" + pattern.description + "','" + pattern.name + "','"+pattern.PatternGroup+"')");
             }
             statement.close();
         }catch (SQLException e){
@@ -80,19 +81,21 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         log.log("Replace this pattern " + oldPattern.getId() + " to this " + newPattern.getId());
         try{
             if (newPattern.getSchema() != null) {
-                PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=?,pattern_schema=? where pattern_id=?");
+                PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=?,pattern_schema=?,pattern_group=? where pattern_id=?");
                 statement.setInt(1, newPattern.id);
                 statement.setString(2, newPattern.description);
                 statement.setString(3, newPattern.name);
                 statement.setBytes(4, newPattern.schema.array());
-                statement.setInt(5, oldPattern.id);
+                statement.setInt(5,newPattern.PatternGroup);
+                statement.setInt(6, oldPattern.id);
                 statement.execute();
             }else{
-                PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=? where pattern_id=?");
+                PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=?,pattern_group=? where pattern_id=?");
                 statement.setInt(1, newPattern.id);
                 statement.setString(2, newPattern.description);
                 statement.setString(3, newPattern.name);
-                statement.setInt(4, oldPattern.id);
+                statement.setInt(4,newPattern.PatternGroup);
+                statement.setInt(5, oldPattern.id);
                 statement.execute();
             }
         }catch (SQLException e){
