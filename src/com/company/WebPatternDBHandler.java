@@ -2,6 +2,9 @@ package com.company;
 
 import com.company.thrift.PatternModel;
 import com.company.thrift.WebPatternDB;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.thrift.TException;
 
 import java.nio.ByteBuffer;
@@ -23,21 +26,20 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     /**
      * Поток логгера
      */
-    private  LogThread log;
-
+    private Logger logger;
     /**
      * Конструктор. Выполняет подключение к базе данных, запускает поток логгера.
      */
-    public WebPatternDBHandler(LogThread log, String userName, String userPass){
+    public WebPatternDBHandler(String userName, String userPass){
         try{
             Driver driver = new com.mysql.cj.jdbc.Driver();
             driverManager.registerDriver(driver);
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/web_apps_patterns", userName, userPass);
-            this.log = log;
-            this.log.log("User name: " + userName + ", User password : " + userPass);
-            this.log.log("Connect to data base");
+            logger = LogManager.getLogger();
+            logger.log(Level.INFO,"User name: " + userName + ", User password : " + userPass);
+            logger.log(Level.INFO,"Connect to data base");
         }catch (SQLException e){
-            log.log("Cannot connect to SQL server.");
+            logger.log(Level.INFO,"Cannot connect to SQL server.");
         }
     }
 
@@ -46,8 +48,8 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      * @param pattern содержит наименование, описание и графическую схему паттерна необходимых для заполнения базы данных
      */
     public void addPattern(PatternModel pattern){
-         log.log("New insert request from client.");
-         log.log("Adding new pattern " + pattern.getName() + " pattern group " + pattern.getPatternGroup());
+         logger.log(Level.INFO,"New insert request from client.");
+         logger.log(Level.INFO,"Adding new pattern " + pattern.getName() + " pattern group " + pattern.getPatternGroup());
         try{
             Statement statement = connection.createStatement();
             if (pattern.schema!=null) {
@@ -77,8 +79,8 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      * @param newPattern новый паттерн в базе данных, которым заменят.
      */
     public void replacePattern(PatternModel oldPattern, PatternModel newPattern){
-        log.log("Replace request from client.");
-        log.log("Replace this pattern " + oldPattern.getId() + " to this " + newPattern.getId());
+        logger.log(Level.INFO,"Replace request from client.");
+        logger.log(Level.INFO,"Replace this pattern " + oldPattern.getId() + " to this " + newPattern.getId());
         try{
             if (newPattern.getSchema() != null) {
                 PreparedStatement statement = connection.prepareStatement("update patterns set pattern_name=?,pattern_description=?,pattern_name=?,pattern_schema=?,pattern_group=? where pattern_id=?");
@@ -108,8 +110,8 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      * @param delPattern паттрен для удаления из базы данных.
      */
     public void deletePattern(PatternModel delPattern){
-        log.log("Delete request from client.");
-        log.log("Deleting pattern " + delPattern.getId());
+        logger.log(Level.INFO,"Delete request from client.");
+        logger.log(Level.INFO,"Deleting pattern " + delPattern.getId());
         try{
             Statement statement = connection.createStatement();
             statement.execute("delete from patterns where pattern_id='"+delPattern.id+"'");
@@ -145,7 +147,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      * @throws TException выбрасывается при наличии неполадок в RPC
      */
     public List<PatternModel> findPattern(PatternModel pattern) throws TException {
-        log.log("Search request from client.");
+        logger.log(Level.INFO,"Search request from client.");
         try{
             Statement statement = connection.createStatement();
             SQLSearchRequestConfigurator sqlSearchRequestConfigurator = new SQLSearchRequestConfigurator(pattern);
@@ -164,8 +166,8 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      * @throws TException выбрасывается при наличии неполадок в RPC
      */
     public PatternModel findPatternById(int id, String patternGroup) throws TException {
-        log.log("Search by id request from client.");
-        log.log("Searching id: "+id);
+        logger.log(Level.INFO,"Search by id request from client.");
+        logger.log(Level.INFO,"Searching id: "+id);
         try{
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("select * from patterns where pattern_id ='"+id+"'");
@@ -180,7 +182,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
                     pattern.setSchema(buffer);
                 }
             }
-            log.log("Find pattern "+pattern.getName());
+            logger.log(Level.INFO,"Find pattern "+pattern.getName());
             return pattern;
         }catch (SQLException e){
             e.printStackTrace();
@@ -208,7 +210,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             pattern.setDescription(resultSet.getString(3));
             pattern.setPatternGroup(resultSet.getInt(5));
             returnList.add(pattern);
-            log.log("Find pattern " + pattern.getName());
+            logger.log(Level.INFO,"Find pattern " + pattern.getName());
         }
         resultSet.close();
         return returnList;
@@ -220,7 +222,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      */
     public void closeConnection(){
         try{
-            log.log("Closing connection");
+            logger.log(Level.INFO,"Closing connection");
             connection.close();
         }catch (SQLException e){
             e.printStackTrace();
