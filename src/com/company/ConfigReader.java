@@ -29,7 +29,7 @@ public class ConfigReader {
     public ConfigReader(){
         JsonReader jsonReader;
         try{
-            FileInputStream fileInputStream = new FileInputStream(new File("cfg.txt"));
+            FileInputStream fileInputStream = new FileInputStream(new File("config.cfg"));
             jsonReader = Json.createReader(fileInputStream);
             JsonObject jsonObject = jsonReader.readObject();
             JsonObject serverCfg = jsonObject.getJsonObject("server");
@@ -63,4 +63,5 @@ public class ConfigReader {
     public String getUserPass() {
         return userPass;
     }
+
 }

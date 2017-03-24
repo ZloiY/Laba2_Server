@@ -1,5 +1,12 @@
 namespace java patterns
-
+/*
+ * Модель паттерна.
+ * 1 - id паттерна в базе данных;
+ * 2 - номер группы к которой принадлежит паттерн(Порождающий, Структурный, Поведенческий, MV-паттерны);
+ * 3 - название паттерна;
+ * 4 - описание паттерна;
+ * 5 - схема паттерна.
+ */
 struct PatternModel {
     1: optional i32 id,
     2: optional i32 PatternGroup,
@@ -7,18 +14,25 @@ struct PatternModel {
     4: optional string description,
     5: optional binary schema,
 }
-
+/*
+ * Список групп к которой может принадлежать паттерн.
+ */
 enum PatternGroup{
     MV_PATTERNS = 1,
     STRUCT_PATTERNS = 2,
     CREAT_PATTERNS = 3,
     BEHAVE_PATTERNS = 4
 }
-
+/*
+ * Исключение возникающие при ошибках сервера.
+ */
 exception InvalidRequest{
     1: string whatHappens
 }
-
+/*
+ * Сервис содержащий методы для взаимодействия с запросами клиента.
+ * Реализация методов {@link com.company.WebPatternDBHandler}
+ */
 service WebPatternDB{
 
     void addPattern(1:PatternModel newPattern) throws (1:InvalidRequest oups),

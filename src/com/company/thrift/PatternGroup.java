@@ -10,7 +10,13 @@ package com.company.thrift;
 import java.util.Map;
 import java.util.HashMap;
 import org.apache.thrift.TEnum;
-
+/**
+ * Список групп к которой может принадлежать паттерн.
+ * MV_PATTERNS - MV-паттерны;
+ * STRUCT_PATTERNS - структурные паттерны;
+ * CREAT_PATTERNS - порождающие паттерны;
+ * BEHAVE_PATTERNS - поведенческие паттерны.
+ */
 public enum PatternGroup implements org.apache.thrift.TEnum {
   MV_PATTERNS(1),
   STRUCT_PATTERNS(2),

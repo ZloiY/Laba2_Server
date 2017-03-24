@@ -13,18 +13,32 @@ import org.apache.thrift.transport.TServerTransport;
 
 import java.io.File;
 
-
+/**
+ * Класс использующийся для старта сервера.
+ */
 public class Main {
-
+    /**
+     * Сервер, который будет принимать входящие соединения.
+     */
     private static TServer server;
+    /**
+     * Порт для сервера.
+     */
     private static int port;
+    /**
+     * Логгер для логирования процесса работы сервера.
+     */
     private static Logger logger;
 
+    /**
+     * Точка входа серверного приложения.
+     * @param args параметры используемые при запуске
+     */
     public static void main(String[] args) {
+        ConfigReader configReader = new ConfigReader();
         LoggerContext context = (LoggerContext)LogManager.getContext(false);
         context.setConfigLocation(new File("C:\\Users\\ZloiY\\IdeaProjects\\Laba2_Server\\src\\log4j2.xml").toURI());
         logger = LogManager.getLogger();
-        ConfigReader configReader = new ConfigReader();
         port = configReader.getPort();
         logger.log(Level.INFO,"Server is running on port "+ port);
 	    WebPatternDBHandler webPatternDBHandler = new WebPatternDBHandler(configReader.getUserName(), configReader.getUserPass());
@@ -32,7 +46,8 @@ public class Main {
                 WebPatternDB.Processor webPatternDB = new WebPatternDB.Processor(webPatternDBHandler);
                 Runnable connectionThread = new Runnable() {
                     @Override
-                    public void run() {getClient(webPatternDB);}
+                    public void run() {
+                        startServer(webPatternDB);}
                 };
                 new Thread(connectionThread).start();
                 Runtime.getRuntime().addShutdownHook(new Thread(){
@@ -52,7 +67,11 @@ public class Main {
 
         }
 
-    private static void getClient(WebPatternDB.Processor processor) {
+    /**
+     * Запускает сервер.
+     * @param processor экземпляр класса унаследованного от сгенерированного thrift класса
+     */
+    private static void startServer(WebPatternDB.Processor processor) {
         try {
             TServerTransport serverTransport = new TServerSocket(port);
             server = new TThreadPoolServer(new TThreadPoolServer.Args(serverTransport).processor(processor));
