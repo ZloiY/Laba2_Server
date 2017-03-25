@@ -37,8 +37,7 @@ public class Main {
     public static void main(String[] args) {
         ConfigReader configReader = new ConfigReader();
         LoggerContext context = (LoggerContext)LogManager.getContext(false);
-        context.setConfigLocation(new File("C:\\Users\\ZloiY\\IdeaProjects\\Laba2_Server\\src\\log4j2.xml").toURI());
-        logger = LogManager.getLogger();
+        logger = LogManager.getLogger("MyLogger");
         port = configReader.getPort();
         logger.log(Level.INFO,"Server is running on port "+ port);
 	    WebPatternDBHandler webPatternDBHandler = new WebPatternDBHandler(configReader.getUserName(), configReader.getUserPass());
@@ -53,7 +52,7 @@ public class Main {
                 Runtime.getRuntime().addShutdownHook(new Thread(){
                     @Override
                     public void run() {
-
+                        logger.log(Level.INFO,"Closing connection");
                         webPatternDBHandler.closeConnection();
                         logger.log(Level.INFO,"Stopping server.");
                         Configurator.shutdown(context);

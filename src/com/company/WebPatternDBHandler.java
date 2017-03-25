@@ -22,7 +22,6 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      * Соединенение с базой данной
      */
     private Connection connection;
-    private DriverManager driverManager;
     /**
      * Поток логгера
      */
@@ -33,7 +32,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
     public WebPatternDBHandler(String userName, String userPass){
         try{
             Driver driver = new com.mysql.cj.jdbc.Driver();
-            driverManager.registerDriver(driver);
+            DriverManager.registerDriver(driver);
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/web_apps_patterns", userName, userPass);
             logger = LogManager.getLogger();
             logger.log(Level.INFO,"User name: " + userName + ", User password : " + userPass);
@@ -222,7 +221,6 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      */
     public void closeConnection(){
         try{
-            logger.log(Level.INFO,"Closing connection");
             connection.close();
         }catch (SQLException e){
             e.printStackTrace();
