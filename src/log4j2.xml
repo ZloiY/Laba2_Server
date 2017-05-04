@@ -2,13 +2,13 @@
 <Configuration status="WARN" name="Log4jTest" packages="">
     <Properties>
         <Property name="filename">test.log</Property>
+        <Property name="Encoding">UTF-8</Property>
     </Properties>
 
     <Appenders>
         <Console name="STDOUT">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </Console>
-
         <File name="File" fileName="${filename}">
             <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
         </File>

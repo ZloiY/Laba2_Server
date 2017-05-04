@@ -39,7 +39,7 @@ public class SQLSearchRequestConfigurator {
      * Формирует основные параметры для поиска
      * @return готовый поисковый запрос
      */
-    private String createSearchRequest(){
+    public String createSearchRequest(){
         String groupSearch = "";
         String nameSearch = "";
         String descriptionSearch = "";
@@ -59,7 +59,7 @@ public class SQLSearchRequestConfigurator {
      * @param descriptionSearch третий параметр поиска
      * @return готовый поисковый запрос
      */
-    private String searchStatementWith3Parametres(String gropuSearch, String nameSearch, String descriptionSearch){
+    public String searchStatementWith3Parametres(String gropuSearch, String nameSearch, String descriptionSearch){
         if (gropuSearch.isEmpty() && nameSearch.isEmpty() && descriptionSearch.isEmpty())
             return "select * from patterns";
         if (gropuSearch.isEmpty() || nameSearch.isEmpty() || descriptionSearch.isEmpty()){
@@ -85,11 +85,11 @@ public class SQLSearchRequestConfigurator {
      * @param secondParametr второй параметр поиска
      * @return готовый поисковый запрос
      */
-    private String searchStatementWith2Parametres(String firstParametr, String secondParametr){
+    public String searchStatementWith2Parametres(String firstParametr, String secondParametr){
         if (firstParametr.isEmpty() || secondParametr.isEmpty())
             if (firstParametr.isEmpty())
             return searchStatementWith1Parametr(secondParametr);
-            else return searchStatementWith1Parametr(secondParametr);
+            else return searchStatementWith1Parametr(firstParametr);
         else return "select * from patterns where "+firstParametr+" and "+secondParametr;
     }
 
@@ -98,7 +98,7 @@ public class SQLSearchRequestConfigurator {
      * @param searchParametr парметр поиска
      * @return готовый поисковый запрос
      */
-    private String searchStatementWith1Parametr(String searchParametr){
+    public String searchStatementWith1Parametr(String searchParametr){
         return "select * from patterns where "+searchParametr;
     }
 

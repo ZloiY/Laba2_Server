@@ -52,7 +52,7 @@ public class Main {
                 Runtime.getRuntime().addShutdownHook(new Thread(){
                     @Override
                     public void run() {
-                        logger.log(Level.INFO,"Closing connection");
+                        logger.log(Level.INFO,"Closing connection to DB");
                         webPatternDBHandler.closeConnection();
                         logger.log(Level.INFO,"Stopping server.");
                         Configurator.shutdown(context);
@@ -61,6 +61,7 @@ public class Main {
                     }
                 });
             }catch (Exception e){
+                logger.log(Level.ERROR,"Cannot create Processor");
                 e.printStackTrace();
             }
 
@@ -77,6 +78,7 @@ public class Main {
             logger.log(Level.INFO,"Awaiting client");
             server.serve();
         }catch (Exception e){
+            logger.log(Level.ERROR, "Cannot get client connection");
             e.printStackTrace();
         }
     }

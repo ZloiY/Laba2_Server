@@ -2,6 +2,7 @@ package com.company;
 
 import com.company.thrift.PatternModel;
 import com.company.thrift.WebPatternDB;
+import com.mysql.cj.jdbc.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,6 +10,9 @@ import org.apache.thrift.TException;
 
 import java.nio.ByteBuffer;
 import java.sql.*;
+import java.sql.Blob;
+import java.sql.Driver;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,13 +37,18 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         try{
             Driver driver = new com.mysql.cj.jdbc.Driver();
             DriverManager.registerDriver(driver);
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/web_apps_patterns", userName, userPass);
             logger = LogManager.getLogger();
+            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/web_apps_patterns", userName, userPass);
             logger.log(Level.INFO,"User name: " + userName + ", User password : " + userPass);
             logger.log(Level.INFO,"Connect to data base");
         }catch (SQLException e){
-            logger.log(Level.INFO,"Cannot connect to SQL server.");
+            logger.log(Level.ERROR,"Cannot connect to SQL server.");
+            e.printStackTrace();
         }
+    }
+
+    public Connection getConnection() {
+        return connection;
     }
 
     /**
@@ -68,6 +77,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             }
             statement.close();
         }catch (SQLException e){
+            logger.log(Level.ERROR, "Cannot add pattern");
             e.printStackTrace();
         }
     }
@@ -100,6 +110,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
                 statement.execute();
             }
         }catch (SQLException e){
+            logger.log(Level.ERROR, "Cannot replace pattern");
             e.printStackTrace();
         }
     }
@@ -116,6 +127,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             statement.execute("delete from patterns where pattern_id='"+delPattern.id+"'");
             statement.close();
         }catch (SQLException e){
+            logger.log(Level.ERROR, "Cannot delete pattern");
             e.printStackTrace();
         }
     }
@@ -134,6 +146,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
                 tables.add(resultSet.getString(1));
             return tables;
         }catch (SQLException sql){
+            logger.log(Level.ERROR, "Cannot get pattern list");
             sql.printStackTrace();
             return null;
         }
@@ -153,6 +166,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             ResultSet resultSet = statement.executeQuery(sqlSearchRequestConfigurator.getSearchRequest());
             return createLists(resultSet);
         }catch (SQLException e){
+            logger.log(Level.ERROR, "Troubles when searching patterns");
             e.printStackTrace();
             return null;
         }
@@ -164,7 +178,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      * @return найденный паттерн
      * @throws TException выбрасывается при наличии неполадок в RPC
      */
-    public PatternModel findPatternById(int id, String patternGroup) throws TException {
+    public PatternModel findPatternById(int id) throws TException {
         logger.log(Level.INFO,"Search by id request from client.");
         logger.log(Level.INFO,"Searching id: "+id);
         try{
@@ -175,6 +189,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
                 pattern.setId(resultSet.getInt(1));
                 pattern.setName(resultSet.getString(2));
                 pattern.setDescription(resultSet.getString(3));
+                pattern.setPatternGroup(resultSet.getInt(5));
                 if (resultSet.getBlob(4) != null) {
                     Blob blob = resultSet.getBlob(4);
                     ByteBuffer buffer = ByteBuffer.wrap(blob.getBytes(1,(int)blob.length()));
@@ -184,6 +199,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
             logger.log(Level.INFO,"Find pattern "+pattern.getName());
             return pattern;
         }catch (SQLException e){
+            logger.log(Level.ERROR, "Cannot find by id");
             e.printStackTrace();
         }
         return null;
@@ -195,7 +211,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
      * @return список найденных паттернов
      * @throws SQLException выбрасывается при сбоях вработе с базой данных
      */
-    private ArrayList<PatternModel> createLists(ResultSet resultSet)throws SQLException{
+    public ArrayList<PatternModel> createLists(ResultSet resultSet)throws SQLException{
         ArrayList<PatternModel> returnList = new ArrayList<>();
         while (resultSet.next()) {
             PatternModel pattern = new PatternModel();
@@ -223,6 +239,7 @@ public class WebPatternDBHandler implements WebPatternDB.Iface {
         try{
             connection.close();
         }catch (SQLException e){
+            logger.log(Level.ERROR, "Cannot close connection");
             e.printStackTrace();
         }
     }

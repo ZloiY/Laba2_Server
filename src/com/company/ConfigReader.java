@@ -43,6 +43,26 @@ public class ConfigReader {
     }
 
     /**
+     * Мок конструктора
+     * @param testConfig тестовый фай
+     */
+    public ConfigReader(File testConfig){
+        JsonReader jsonReader;
+        try{
+            FileInputStream fileInputStream = new FileInputStream(testConfig);
+            jsonReader = Json.createReader(fileInputStream);
+            JsonObject jsonObject = jsonReader.readObject();
+            JsonObject serverCfg = jsonObject.getJsonObject("server");
+            port = serverCfg.getInt("port");
+            userName = serverCfg.getString("DBUserName");
+            userPass = serverCfg.getString("DBUserPass");
+            fileInputStream.close();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Возвращает порт сервера.
      * @return порт сервера
      */
